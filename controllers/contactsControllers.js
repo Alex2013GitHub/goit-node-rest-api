@@ -45,7 +45,13 @@ export const createContact = ctrlWrap(async(req, res) => {
 
 export const updateContact = ctrlWrap(async(req, res) => {
     const {id} = req.params;
-    const result = await updateById(id, req.body);
+    const { body } = req;
+
+    if (!Object.keys(body).length) {
+        throw HttpError(400, "Body must have at least one field");
+    }
+
+    const result = await updateById(id, body);
 
     if(!result){
         throw HttpError(404, "Not Found");
