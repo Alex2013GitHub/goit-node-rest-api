@@ -1,61 +1,92 @@
-import {listContacts,
-    getById,
-    addContact,
-    removeContact,
-    updateById,} from "../services/contactsServices.js";
 import HttpError from "../helpers/HttpError.js";
-import ctrlWrap from "../helpers/ctrlWrap.js";
+import { Contact } from "../models/contact.js";
 
-export const getAllContacts = ctrlWrap(async(_, res) => {
-    const result = await listContacts();
-    res.status(200).json(result);
-});
+export const getAllContacts  = async (_, res, next) => {
+  try{
+    const result = await Contact.find({}, "name email phone favorite");
+  res.json(result);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
 
-export const getOneContact = ctrlWrap(async(req, res) => {
-    const {id} = req.params;
-    const result = await getById(id);
+export const addContact = async (req, res, next) => {
+  try{
+    const result = await Contact.create(req.body);
+  res.status(201).json(result);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
 
-    if(!result){
-        throw HttpError(404, "Not Found");
-    }
+export const getByIdContact = async (req, res, next) => {
+  try{
+    const { id } = req.params;
+  const result = await Contact.findById(id);
 
-    res.status(200).json(result);
-});
+  if (!result) {
+    throw HttpError(404, "Not Found");
+  }
 
-export const deleteContact = ctrlWrap(async(req, res) => {
-    const {id} = req.params;
-    const result = await removeContact(id);
+  res.json(result);
 
-    if(!result){
-        throw HttpError(404, "Not Found");
-    }
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
 
-    res.status(200).json(result);
-});
+export const deleteByIdContact = async (req, res, next) => {
+  try{
+    const { id } = req.params;
+  const result = await Contact.findByIdAndDelete(id);
 
-export const createContact = ctrlWrap(async(req, res) => {
-    const result = await addContact(req.body);
+  if (!result) {
+    throw HttpError(404, "Not Found");
+  }
 
-    if(!result){
-        throw HttpError(404, "Not Found");
-    }
+  res.json({ message: "Deleted successfully" });
 
-    res.status(201).json(result)
-});
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
 
-export const updateContact = ctrlWrap(async(req, res) => {
-    const {id} = req.params;
-    const { body } = req;
 
-    if (!Object.keys(body).length) {
-        throw HttpError(400, "Body must have at least one field");
-    }
 
-    const result = await updateById(id, body);
+export const updateByIdContact = async (req, res, next) => {
+  try{
+    const { id } = req.params;
+  const result = await Contact.findByIdAndUpdate(id, req.body, { new: true });
 
-    if(!result){
-        throw HttpError(404, "Not Found");
-    }
+  if (!result) {
+    throw HttpError(404, "Not found");
+  }
 
-    res.status(200).json(result);
-});
+  res.json(result);
+
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const updateStatusContact = async (req, res, next) => {
+  try{
+    const { id } = req.params;
+  const result = await Contact.findByIdAndUpdate(id, req.body, { new: true });
+
+  if (!result) {
+    throw HttpError(404, "Not found");
+  }
+
+  res.json(result);
+
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
