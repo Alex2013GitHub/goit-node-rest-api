@@ -47,7 +47,7 @@ export const deleteByIdContact = async (req, res, next) => {
     throw HttpError(404, "Not Found");
   }
 
-  res.json({ message: "Deleted successfully" });
+  res.status(200).json(result);
 
   } catch (error) {
     console.log(error);
@@ -61,6 +61,10 @@ export const updateByIdContact = async (req, res, next) => {
   try{
     const { id } = req.params;
   const result = await Contact.findByIdAndUpdate(id, req.body, { new: true });
+
+  if (!Object.keys(req.body).length) {
+    throw HttpError(400, "Body must have at least one field");
+}
 
   if (!result) {
     throw HttpError(404, "Not found");
