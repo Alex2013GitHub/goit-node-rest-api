@@ -7,9 +7,9 @@ dotenv.config();
 
 const authUser = async (req, res, next) => {
   const { authorization = "" } = req.headers;
-  const [bearer, token] = authorization.split(" ");
+  const [type, token] = authorization.split(" ");
 
-  if (bearer !== "Bearer") {
+  if (type !== "Bearer") {
     next(HttpError(401));
   }
 

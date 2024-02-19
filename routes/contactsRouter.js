@@ -20,7 +20,12 @@ contactsRouter.get("/:id", authUser, isValidId, getByIdContact);
 
 contactsRouter.delete("/:id", authUser, isValidId, deleteByIdContact);
 
-contactsRouter.post("/", validateBody(schemas.createContactSchema), addContact);
+contactsRouter.post(
+  "/",
+  authUser,
+  validateBody(schemas.createContactSchema),
+  addContact
+);
 
 contactsRouter.put(
   "/:id",

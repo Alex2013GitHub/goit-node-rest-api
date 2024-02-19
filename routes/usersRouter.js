@@ -18,9 +18,9 @@ userRouter.post(
   register
 );
 userRouter.post("/login", validateBody(authSchemas.loginSchema), login);
-userRouter.post("/current", authUser, getCurrent);
-userRouter.get("/logout", authUser, logout);
-userRouter.get(
+userRouter.get("/current", authUser, getCurrent);
+userRouter.post("/logout", authUser, logout);
+userRouter.patch(
   "/",
   authUser,
   validateBody(authSchemas.updateSubscriptionSchema),
