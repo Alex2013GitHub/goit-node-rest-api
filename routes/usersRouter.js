@@ -1,6 +1,5 @@
 import express from "express";
 import { authSchemas } from "../models/usersModel.js";
-import authUser from "../middlewares/authUser.js";
 import {
   getCurrent,
   login,
@@ -9,8 +8,9 @@ import {
   updateSubscription,
 } from "../controllers/userControllers.js";
 import validateBody from "../middlewares/validateBody.js";
+import authUser from "../middlewares/authUser.js";
 
-const userRouter = express.Router();
+export const userRouter = express.Router();
 
 userRouter.post(
   "/register",
@@ -27,4 +27,4 @@ userRouter.patch(
   updateSubscription
 );
 
-export default userRouter;
+
