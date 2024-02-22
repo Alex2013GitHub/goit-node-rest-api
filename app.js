@@ -1,14 +1,18 @@
 import express from "express";
 import morgan from "morgan";
+import dotenv from "dotenv";
 import cors from "cors";
 import contactsRouter from "./routes/contactsRouter.js";
+import { userRouter } from "./routes/usersRouter.js";
 
 export const app = express();
+dotenv.config();
 
 app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());
 
+app.use("/users", userRouter);
 app.use("/api/contacts", contactsRouter);
 
 app.use((_, res) => {
@@ -19,5 +23,3 @@ app.use((err, _, res, next) => {
   const { status = 500, message = "Server error" } = err;
   res.status(status).json({ message });
 });
-
-
