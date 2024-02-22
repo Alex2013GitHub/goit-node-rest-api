@@ -3,10 +3,15 @@ import dotenv from "dotenv";
 import { User } from "../models/usersModel.js";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
+import Jimp from "jimp";
+import fs from "fs/promises";
+import path from "path";
 
 dotenv.config();
 
 const { SECRET_KEY } = process.env;
+
+const avatarDir = path.resolve("public", "avatars");
 
 export const register = async (req, res, next) => {
   try {
@@ -100,6 +105,39 @@ export const updateSubscription = async (req, res, next) => {
     res.json({
       message: "Subscription has been updated successfully",
     });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const updateAvatar = async (req, res, next) => {
+  try {
+    const { _id } = req.user;
+
+    const { path: tempUpload, originalname } = req.file;
+    const img = await Jimp.read(tempUpload);
+
+    await img
+      .autocrop()
+      .cover(
+        250,
+        250,
+        Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.VERTICAL_ALIGN_MIDDLE
+      );
+
+    const filename = `${Date.now()}-${originalname}`;
+    const resultUpload = path.join(avatarDir, filename);
+
+    await fs.rename(tempUpload, resultUpload);
+    const avatarURL = path.join("avatar", filename);
+
+    await User.findByIdAndUpdate(_id, { avatarURL });
+    res.status(200).json({ avatarURL });
+
+    if (!req.file) {
+      throw HttpError();
+    }
   } catch (error) {
     console.log(error);
     next(error);

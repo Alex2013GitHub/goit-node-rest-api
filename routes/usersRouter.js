@@ -5,10 +5,12 @@ import {
   login,
   logout,
   register,
+  updateAvatar,
   updateSubscription,
 } from "../controllers/userControllers.js";
 import validateBody from "../middlewares/validateBody.js";
 import authUser from "../middlewares/authUser.js";
+import { upload } from "../middlewares/upload.js";
 
 export const userRouter = express.Router();
 
@@ -26,5 +28,4 @@ userRouter.patch(
   validateBody(authSchemas.updateSubscriptionSchema),
   updateSubscription
 );
-
-
+userRouter.patch("/avatars", authUser, upload.single("avatar"), updateAvatar);
