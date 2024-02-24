@@ -23,16 +23,20 @@ export const register = async (req, res, next) => {
       throw HttpError(409, "Email in use");
     }
 
+    const hashPassword = await bcryptjs.hash(password, 10);
+
     const avatarURL = gravatar.url(email);
 
-    const hashPassword = await bcryptjs.hash(password, 10);
-    const newUser = await User.create({ ...req.body, password: hashPassword });
+    const newUser = await User.create({
+      ...req.body,
+      password: hashPassword,
+      avatarURL,
+    });
 
     res.status(201).json({
       user: {
         email: newUser.email,
         subscription: newUser.subscription,
-        avatarURL,
       },
     });
   } catch (error) {
@@ -134,18 +138,15 @@ export const updateAvatar = async (req, res, next) => {
         Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.VERTICAL_ALIGN_MIDDLE
       );
 
-    const filename = `${Date.now()}-${originalname}`;
-    const resultUpload = path.join(avatarDir, filename);
+    const filename = `${_id}-${originalname}`;
+    const resultUpload = path.resolve(avatarDir, filename);
 
     await fs.rename(tempUpload, resultUpload);
-    const avatarURL = path.join("avatars", filename);
+    const avatarURL = path.join("/", "avatars", filename);
 
     await User.findByIdAndUpdate(_id, { avatarURL });
-    res.status(200).json({ avatarURL });
 
-    if (!req.file) {
-      throw HttpError();
-    }
+    res.json({ avatarURL });
   } catch (error) {
     console.log(error);
     next(error);
