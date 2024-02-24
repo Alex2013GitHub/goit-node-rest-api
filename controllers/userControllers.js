@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import Jimp from "jimp";
 import fs from "fs/promises";
 import path from "path";
+import gravatar from "gravatar";
 
 dotenv.config();
 
@@ -22,6 +23,8 @@ export const register = async (req, res, next) => {
       throw HttpError(409, "Email in use");
     }
 
+    const avatarURL = gravatar.url(email);
+
     const hashPassword = await bcryptjs.hash(password, 10);
     const newUser = await User.create({ ...req.body, password: hashPassword });
 
@@ -29,6 +32,7 @@ export const register = async (req, res, next) => {
       user: {
         email: newUser.email,
         subscription: newUser.subscription,
+        avatarURL,
       },
     });
   } catch (error) {
@@ -115,6 +119,10 @@ export const updateAvatar = async (req, res, next) => {
   try {
     const { _id } = req.user;
 
+    if (!req.file) {
+      throw HttpError(400, "No avatar uplouded.");
+    }
+
     const { path: tempUpload, originalname } = req.file;
     const img = await Jimp.read(tempUpload);
 
@@ -130,7 +138,7 @@ export const updateAvatar = async (req, res, next) => {
     const resultUpload = path.join(avatarDir, filename);
 
     await fs.rename(tempUpload, resultUpload);
-    const avatarURL = path.join("avatar", filename);
+    const avatarURL = path.join("avatars", filename);
 
     await User.findByIdAndUpdate(_id, { avatarURL });
     res.status(200).json({ avatarURL });
