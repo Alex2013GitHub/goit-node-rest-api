@@ -3,10 +3,16 @@ import dotenv from "dotenv";
 import { User } from "../models/usersModel.js";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
+import Jimp from "jimp";
+import fs from "fs/promises";
+import path from "path";
+import gravatar from "gravatar";
 
 dotenv.config();
 
 const { SECRET_KEY } = process.env;
+
+const avatarDir = path.resolve("public", "avatars");
 
 export const register = async (req, res, next) => {
   try {
@@ -18,7 +24,14 @@ export const register = async (req, res, next) => {
     }
 
     const hashPassword = await bcryptjs.hash(password, 10);
-    const newUser = await User.create({ ...req.body, password: hashPassword });
+
+    const avatarURL = gravatar.url(email);
+
+    const newUser = await User.create({
+      ...req.body,
+      password: hashPassword,
+      avatarURL,
+    });
 
     res.status(201).json({
       user: {
@@ -100,6 +113,33 @@ export const updateSubscription = async (req, res, next) => {
     res.json({
       message: "Subscription has been updated successfully",
     });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const updateAvatar = async (req, res, next) => {
+  try {
+    const { _id } = req.user;
+
+    if (!req.file) {
+      throw HttpError(400, "No avatar uplouded.");
+    }
+    const { path: tempUpload, originalname } = req.file;
+
+    const image = await Jimp.read(tempUpload);
+    await image.resize(250, 250).quality(90).writeAsync(tempUpload);
+
+    const filename = `${_id}-${originalname}`;
+    const resultUpload = path.resolve(avatarDir, filename);
+
+    await fs.rename(tempUpload, resultUpload);
+    const avatarURL = path.join("avatars", filename);
+
+    await User.findByIdAndUpdate(_id, { avatarURL });
+
+    res.json({ avatarURL });
   } catch (error) {
     console.log(error);
     next(error);
