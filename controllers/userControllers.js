@@ -37,7 +37,6 @@ export const register = async (req, res, next) => {
       user: {
         email: newUser.email,
         subscription: newUser.subscription,
-        avatarURL: newUser.avatarURL,
       },
     });
   } catch (error) {
@@ -127,17 +126,10 @@ export const updateAvatar = async (req, res, next) => {
     if (!req.file) {
       throw HttpError(400, "No avatar uplouded.");
     }
-
     const { path: tempUpload, originalname } = req.file;
-    const img = await Jimp.read(tempUpload);
 
-    await img
-      .autocrop()
-      .cover(
-        250,
-        250,
-        Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.VERTICAL_ALIGN_MIDDLE
-      );
+    const image = await Jimp.read(tempUpload);
+    await image.resize(250, 250).quality(90).writeAsync(tempUpload);
 
     const filename = `${_id}-${originalname}`;
     const resultUpload = path.resolve(avatarDir, filename);
