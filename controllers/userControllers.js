@@ -37,6 +37,7 @@ export const register = async (req, res, next) => {
       user: {
         email: newUser.email,
         subscription: newUser.subscription,
+        avatarURL: newUser.avatarURL,
       },
     });
   } catch (error) {
@@ -142,7 +143,7 @@ export const updateAvatar = async (req, res, next) => {
     const resultUpload = path.resolve(avatarDir, filename);
 
     await fs.rename(tempUpload, resultUpload);
-    const avatarURL = path.join("/", "avatars", filename);
+    const avatarURL = path.join("avatars", filename);
 
     await User.findByIdAndUpdate(_id, { avatarURL });
 
