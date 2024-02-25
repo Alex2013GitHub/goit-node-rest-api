@@ -8,7 +8,7 @@ import fs from "fs/promises";
 import path from "path";
 import gravatar from "gravatar";
 import { nanoid } from "nanoid";
-import nodemailerConfig from "../helpers/nodemailerConfig.js";
+import { nodemailerConfig } from "../helpers/nodemailerConfig.js";
 
 dotenv.config();
 
