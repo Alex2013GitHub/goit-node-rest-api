@@ -5,8 +5,10 @@ import {
   login,
   logout,
   register,
+  resendVerifyEmail,
   updateAvatar,
   updateSubscription,
+  verifyEmail,
 } from "../controllers/userControllers.js";
 import validateBody from "../middlewares/validateBody.js";
 import authUser from "../middlewares/authUser.js";
@@ -18,6 +20,13 @@ userRouter.post(
   "/register",
   validateBody(authSchemas.registerSchema),
   register
+);
+
+userRouter.get("/verify/:verificationToken", verifyEmail);
+userRouter.post(
+  "/verify",
+  validateBody(authSchemas.verificationEmailSchema),
+  resendVerifyEmail
 );
 userRouter.post("/login", validateBody(authSchemas.loginSchema), login);
 userRouter.get("/current", authUser, getCurrent);

@@ -7,10 +7,12 @@ import Jimp from "jimp";
 import fs from "fs/promises";
 import path from "path";
 import gravatar from "gravatar";
+import { nanoid } from "nanoid";
+import nodemailerConfig from "../helpers/nodemailerConfig.js";
 
 dotenv.config();
 
-const { SECRET_KEY } = process.env;
+const { SECRET_KEY, BASE_URL } = process.env;
 
 const avatarDir = path.resolve("public", "avatars");
 
@@ -24,20 +26,83 @@ export const register = async (req, res, next) => {
     }
 
     const hashPassword = await bcryptjs.hash(password, 10);
-
     const avatarURL = gravatar.url(email);
+    const verificationToken = nanoid();
 
     const newUser = await User.create({
       ...req.body,
       password: hashPassword,
       avatarURL,
+      verificationToken,
     });
+
+    const verifyEmail = {
+      to: email,
+      subject: "Verify email",
+      html: `<a target="_blank" href="${BASE_URL}/api/users/verify/${verificationToken}">Click here to verify email</a>`,
+    };
+
+    await nodemailerConfig(verifyEmail);
 
     res.status(201).json({
       user: {
         email: newUser.email,
         subscription: newUser.subscription,
       },
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const verifyEmail = async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+    const user = await User.findOne({ verificationToken });
+
+    if (!user) {
+      throw HttpError(404, "User not found");
+    }
+
+    await User.findByIdAndUpdate(user._id, {
+      verify: true,
+      verificationToken: null,
+    });
+
+    res.json({
+      message: "Verification successful",
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const resendVerifyEmail = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    console.log(user);
+
+    if (!user) {
+      throw HttpError(404, "User not found");
+    }
+
+    if (user.verify) {
+      throw HttpError(400, "Verification has already been passed");
+    }
+
+    const verifyEmail = {
+      to: email,
+      subject: "Verify your email",
+      html: `<a target="_blank" href="${BASE_URL}/api/users/verify/${user.verificationToken}">Click here to verify email</a>`,
+    };
+
+    await nodemailerConfig(verifyEmail);
+
+    res.json({
+      message: "Verification email sent",
     });
   } catch (error) {
     console.log(error);
