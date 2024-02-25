@@ -8,7 +8,7 @@ import fs from "fs/promises";
 import path from "path";
 import gravatar from "gravatar";
 import { nanoid } from "nanoid";
-import { nodemailerConfig } from "../helpers/nodemailerConfig.js";
+import { sendEmail } from "../helpers/sendEmail.js"
 
 dotenv.config();
 
@@ -42,7 +42,7 @@ export const register = async (req, res, next) => {
       html: `<a target="_blank" href="${BASE_URL}/api/users/verify/${verificationToken}">Click here to verify email</a>`,
     };
 
-    await nodemailerConfig(verifyEmail);
+    await sendEmail(verifyEmail);
 
     res.status(201).json({
       user: {
@@ -99,7 +99,7 @@ export const resendVerifyEmail = async (req, res, next) => {
       html: `<a target="_blank" href="${BASE_URL}/api/users/verify/${user.verificationToken}">Click here to verify email</a>`,
     };
 
-    await nodemailerConfig(verifyEmail);
+    await sendEmail(verifyEmail);
 
     res.json({
       message: "Verification email sent",
