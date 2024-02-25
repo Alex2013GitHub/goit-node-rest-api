@@ -8,7 +8,7 @@ import fs from "fs/promises";
 import path from "path";
 import gravatar from "gravatar";
 import { nanoid } from "nanoid";
-import { sendEmail } from "../helpers/sendEmail.js"
+import { sendEmail } from "../helpers/sendEmail.js";
 
 dotenv.config();
 
